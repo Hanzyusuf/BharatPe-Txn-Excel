@@ -8,7 +8,7 @@ browser.runtime.onMessage.addListener((message) => {
 
 function copyCurrentPageData() {
     let data = extractTableData();
-    if (data) {
+    if (data && data.length > 0) {
         copyToClipboard(data);
         showToast("Current page data copied!", "success");
     } else {
@@ -34,7 +34,7 @@ async function extractAllTableData() {
         await waitForPageLoad(); // Wait for new data to load
     }
 
-    if (allData) {
+    if (allData && allData.length > 0) {
         copyToClipboard(allData);
         showToast("All pages copied!", "success");
     } else {
@@ -51,7 +51,7 @@ function extractTableData() {
         const cells = row.querySelectorAll("td");
         if (cells.length >= 7) {
             const receivedFrom = cells[2].innerText.trim();
-            const utrId = cells[3].innerText.trim();
+            const utrId = "UTR-" + cells[3].innerText.trim();
             const vpa = cells[4].innerText.trim();
             const dateTimeRaw = cells[6].innerText.trim();
             const amountRaw = cells[7].innerText.trim();
@@ -60,7 +60,7 @@ function extractTableData() {
             const dateTime = convertToExcelDate(dateTimeRaw);
 
             // Remove ₹ symbol and spaces
-            const amount = amountRaw.replace(/₹|\s/g, "");
+            const amount = amountRaw.replace(/[₹,]/g, '').trim();
 
             // Format: Column separated by tab, row by newline
             data += `${receivedFrom}\t${utrId}\t${vpa}\t${dateTime}\t${amount}\n`;
@@ -68,29 +68,29 @@ function extractTableData() {
     });
 
     return data;
-
-    if (data && data.length !== 0) {
-        browser.runtime.sendMessage({ action: "copyToClipboard", data: data }).then(response => {
-            showToast("Data copied to clipboard!", "success");
-        });
-    } else {
-        showToast("No data found!", "error");
-    }
 }
 
 function convertToExcelDate(dateStr) {
-    const match = dateStr.match(/(\d{1,2})\s(\w{3})\s'(\d{2})\s\|\s(\d{1,2}):(\d{2})\s(am|pm)/i);
-    if (!match) return dateStr;
+    const months = {
+        "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+        "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12
+    };
 
-    const months = { "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
-                     "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12" };
+    const match = dateStr.match(/(\d+) (\w+) '(\d+) \| (\d+):(\d+) (\w+)/);
+    if (!match) return "";
+
+    let [, day, monthStr, year, hours, minutes, ampm] = match;
+    let month = months[monthStr];
+    let fullYear = 2000 + parseInt(year);  // Convert '25 to 2025
+
+    hours = parseInt(hours);
+    minutes = parseInt(minutes);
+    if (ampm === "pm" && hours !== 12) hours += 12;
+    if (ampm === "am" && hours === 12) hours = 0;
+
+    let jsDate = new Date(fullYear, month - 1, day, hours, minutes);
     
-    let [_, day, month, year, hours, minutes, meridian] = match;
-    year = "20" + year; // Convert '25 to 2025
-    if (meridian.toLowerCase() === "pm" && hours !== "12") hours = String(parseInt(hours) + 12);
-    if (meridian.toLowerCase() === "am" && hours === "12") hours = "00";
-
-    return `${year}-${months[month]}-${day.padStart(2, '0')} ${hours.padStart(2, '0')}:${minutes}:00`;
+    return jsDate.getTime() / 86400000 + 25569; // Convert to Excel format
 }
 
 function waitForPageLoad() {
