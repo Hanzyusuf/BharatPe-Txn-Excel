@@ -14,3 +14,13 @@ function copyToClipboard(text) {
     document.body.removeChild(textarea);
     // console.log("Data copied to clipboard.");
 }
+
+/* Shortcut buttons defined in manifest to send these commands which we listen here */
+browser.commands.onCommand.addListener((command) => {
+    browser.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs.length === 0) return;
+
+        let message = command === "copy_current_page" ? { action: "copyCurrent" } : { action: "copyAll" };
+        browser.tabs.sendMessage(tabs[0].id, message);
+    });
+});

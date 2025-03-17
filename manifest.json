@@ -24,5 +24,19 @@
       "js": ["content.js"],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "commands": {
+    "copy_current_page": {
+        "suggested_key": {
+            "default": "Ctrl+Alt+C"
+        },
+        "description": "Copy Current Page Data"
+    },
+    "copy_all_pages": {
+        "suggested_key": {
+            "default": "Ctrl+Alt+A"
+        },
+        "description": "Copy All Pages Data"
+    }
+  }
 }

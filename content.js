@@ -1,9 +1,50 @@
+browser.runtime.onMessage.addListener((message) => {
+    if (message.action === "copyCurrent") {
+        copyCurrentPageData();
+    } else if (message.action === "copyAll") {
+        extractAllTableData();
+    }
+});
+
+function copyCurrentPageData() {
+    let data = extractTableData();
+    if (data) {
+        copyToClipboard(data);
+        showToast("Current page data copied!", "success");
+    } else {
+        showToast("No data found!", "error");
+    }
+}
+
+async function extractAllTableData() {
+    let allData = "";
+
+    while (true) {
+        let pageData = extractTableData();
+        if (!pageData) break; // Stop if no data on the page
+
+        allData += pageData;
+
+        let nextBtn = document.querySelector("#pagNextBtn");
+        if (!nextBtn || getComputedStyle(nextBtn).pointerEvents === "none") {
+            break; // Stop if Next button is disabled
+        }
+
+        nextBtn.click(); // Click Next button
+        await waitForPageLoad(); // Wait for new data to load
+    }
+
+    if (allData) {
+        copyToClipboard(allData);
+        showToast("All pages copied!", "success");
+    } else {
+        showToast("No data found!", "error");
+    }
+}
+
 function extractTableData() {
     const table = document.querySelector("#datatable_success tbody");
-    if (!table) {
-        showToast("Table not found!", "error");
-        return;
-    }
+    if (!table) return "";
 
     let data = "";
     table.querySelectorAll("tr").forEach(row => {
@@ -25,6 +66,8 @@ function extractTableData() {
             data += `${receivedFrom}\t${utrId}\t${vpa}\t${dateTime}\t${amount}\n`;
         }
     });
+
+    return data;
 
     if (data && data.length !== 0) {
         browser.runtime.sendMessage({ action: "copyToClipboard", data: data }).then(response => {
@@ -48,6 +91,22 @@ function convertToExcelDate(dateStr) {
     if (meridian.toLowerCase() === "am" && hours === "12") hours = "00";
 
     return `${year}-${months[month]}-${day.padStart(2, '0')} ${hours.padStart(2, '0')}:${minutes}:00`;
+}
+
+function waitForPageLoad() {
+    return new Promise(resolve => {
+        let checkInterval = setInterval(() => {
+            let table = document.querySelector("#datatable_success tbody");
+            if (table && table.querySelector("tr")) {
+                clearInterval(checkInterval);
+                resolve();
+            }
+        }, 500);
+    });
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).catch(err => console.error("Clipboard error:", err));
 }
 
 function showToast(message, type) {
