@@ -3,6 +3,18 @@ browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
         copyToClipboard(message.data);
         sendResponse({ success: true });
     }
+    /* if (message.action === "storeAuthData") {
+        browser.storage.local.set({
+            TOKEN: message.token,
+            MERCHANT_ID: message.merchantId
+        }).then(() => {
+            sendResponse({ success: true });
+        }).catch(error => {
+            console.error("Error storing auth data:", error);
+            sendResponse({ success: false });
+        });
+        return true; // Required for async sendResponse
+    } */
 });
 
 function copyToClipboard(text) {

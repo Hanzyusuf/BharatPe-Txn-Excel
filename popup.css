@@ -1,0 +1,100 @@
+body {
+    width: 320px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    padding: 10px 32px 10px 12px;
+    scrollbar-width: none;
+    overflow-x: hidden;
+}
+
+#popup-container {
+    text-align: center;
+}
+
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin: 4px;
+    cursor: pointer;
+}
+button:hover {
+    background: #0056b3;
+}
+button:disabled {
+    background: grey;
+    pointer-events: none;
+    cursor: auto;
+}
+
+p {
+    font-size: 14px;
+    color: green;
+}
+
+.input-settings-section{
+    display: block;
+    text-align: start;
+    margin-bottom: 12px;
+}
+.input-settings-section .input-settings-title{
+    margin-bottom: 4px;
+}
+.input-settings-section > label{
+    display: block;
+}
+
+.input-label{
+    font-size: 13px;
+}
+
+/* Styles for Transaction Download Section */
+.transaction-download {
+    margin-top: 10px;
+    padding: 8px;
+    background: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0px 0px 5px #ccc;
+}
+
+.transaction-download h3 {
+    font-size: 14px;
+}
+
+.transaction-download .description {
+    text-align: start;
+    font-size: 11px;
+}
+
+.transaction-download .description .note{
+    text-align: start;
+    font-size: 11px;
+    font-style: italic;
+}
+
+.transaction-download label {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.transaction-download input {
+    width: 80%;
+    padding: 5px;
+    margin-top: 3px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+#status-message{
+    margin-top: 5px;
+    font-size: 12px;
+}
+
+#errorMessage {
+    color: red;
+    display: none; /* Hidden by default */
+    margin-top: 5px;
+    font-size: 12px;
+}

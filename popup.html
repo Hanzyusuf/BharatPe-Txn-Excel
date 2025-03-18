@@ -1,15 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Table Extractor</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 10px; width: 200px; }
-        button { display: block; width: 100%; margin: 5px 0; padding: 10px; font-weight: bold; cursor: pointer; }
-    </style>
+    <title>Download BharatPe Transaction History Data</title>
+    <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <button id="copyCurrent">Copy Current Page</button>
-    <button id="copyAll">Copy All Pages</button>
-    <script src="popup.js"></script>
+    <div id="popup-container">
+        
+        <div class="input-settings-section">
+            <h5 class="input-settings-title mt-0">Settings: </h5>
+            <label>
+                <input type="checkbox" id="includeHeaderInput" checked>
+                <span class="input-label">Include Header</span>
+            </label>
+            <label>
+                <input type="checkbox" id="excelDateTimeFormat" checked>
+                <span class="input-label">Copy in Excel DateTime Format</span>
+            </label>
+        </div>
+
+        <!-- Section for API Method, Date Range Selection & CSV Download -->
+        <div class="transaction-download">
+            <h3 class="mt-1 mb-0">(API Method)</h3>
+            <h3 class="mt-0 mb-2">Download BharatPe Transactions</h3>
+            <div class="description mb-2 px-2">
+                <ul>
+                    <li>Open <a href="https://enterprise.bharatpe.in/">BharatPe</a> and login.</li>
+                    <li>Set Date Range below and Download Data</li>
+                </ul>
+                <span class="note">Note: This will work till the login session is valid. No need to open the website to download the data, except only once for login.</span>
+            </div>
+            <label for="start-date">Start Date:</label>
+            <input type="date" id="start-date">
+            <label for="end-date">End Date:</label>
+            <input type="date" id="end-date">
+            <button id="download-csv-btn" class="mt-3">Download Data (CSV)</button>
+            <p id="status-message"></p>
+        </div>
+
+        <!-- Section for Data Extract from Page -->
+        <div class="transaction-download">
+            <h3 class="mt-1 mb-1">Extract Data From Page</h3>
+            <div class="description mb-0">
+                <ul>
+                    <li>Open <a href="https://enterprise.bharatpe.in/transactionhistory">Transaction History Page</a></li>
+                    <li>Press any of the buttons to extract data from html on this page and copy it to clipboard.</li>
+                </ul>
+            </div>
+            <button id="copyCurrent">Copy Current Page</button>
+            <button id="copyAll">Copy All Pages</button>
+
+            <p id="errorMessage">This section only works on BharatPe's Transaction History Page.</p>
+        </div>
+
+    </div>
+    <!-- <script src="popup.js"></script> -->
+    <script type="module" src="popup.js"></script>
+    <script type="module" src="csvUtils.js"></script>
+    <script type="module" src="transactions.js"></script>
 </body>
 </html>

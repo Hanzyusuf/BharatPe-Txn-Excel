@@ -1,14 +1,40 @@
-browser.runtime.onMessage.addListener((message) => {
-    if (message.action === "copyCurrent") {
-        copyCurrentPageData();
-    } else if (message.action === "copyAll") {
-        extractAllTableData();
+let useExcelFormat = true;
+let includeHeader = true;
+
+browser.runtime.onMessage.addListener(async (message) => {
+    // Check if the current URL is a BharatPe domain
+    if (!window.location.hostname.includes("bharatpe.in")) {
+        console.warn("Invalid URL: This extension only works on BharatPe.");
+        return;
     }
+
+    try {
+        // Update Preference Values
+        // Fetch stored preferences
+        const data = await browser.storage.local.get(["excelDateTime", "includeHeader"]);
+        useExcelFormat = data.excelDateTime !== false; // Default to true
+        includeHeader = data.includeHeader !== false; // Default to true
+
+        if (message.action === "copyCurrent") {
+            copyCurrentPageData();
+        } else if (message.action === "copyAll") {
+            extractAllTableData();
+        }
+    } catch (error) {
+        console.error("Error fetching preferences:", error);
+    }
+
+    return true; // Important: Allows async handling
 });
 
 function copyCurrentPageData() {
     let data = extractTableData();
     if (data && data.length > 0) {
+
+        if(includeHeader){
+            data = getHeader() + data;
+        }
+
         copyToClipboard(data);
         showToast("Current page data copied!", "success");
     } else {
@@ -35,11 +61,20 @@ async function extractAllTableData() {
     }
 
     if (allData && allData.length > 0) {
+
+        if(includeHeader){
+            allData = getHeader() + allData;
+        }
+
         copyToClipboard(allData);
         showToast("All pages copied!", "success");
     } else {
         showToast("No data found!", "error");
     }
+}
+
+function getHeader() {
+    return "Received From\tUTR ID\tVPA\tDate & Time\tAmount\n";
 }
 
 function extractTableData() {
@@ -56,8 +91,8 @@ function extractTableData() {
             const dateTimeRaw = cells[6].innerText.trim();
             const amountRaw = cells[7].innerText.trim();
 
-            // Convert date to Excel format (YYYY-MM-DD HH:MM:SS)
-            const dateTime = convertToExcelDate(dateTimeRaw);
+            // Convert date to appropriate format
+            const dateTime = convertDate(dateTimeRaw);
 
             // Remove ₹ symbol and spaces
             const amount = amountRaw.replace(/[₹,]/g, '').trim();
@@ -68,29 +103,6 @@ function extractTableData() {
     });
 
     return data;
-}
-
-function convertToExcelDate(dateStr) {
-    const months = {
-        "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
-        "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12
-    };
-
-    const match = dateStr.match(/(\d+) (\w+) '(\d+) \| (\d+):(\d+) (\w+)/);
-    if (!match) return "";
-
-    let [, day, monthStr, year, hours, minutes, ampm] = match;
-    let month = months[monthStr];
-    let fullYear = 2000 + parseInt(year);  // Convert '25 to 2025
-
-    hours = parseInt(hours);
-    minutes = parseInt(minutes);
-    if (ampm === "pm" && hours !== 12) hours += 12;
-    if (ampm === "am" && hours === 12) hours = 0;
-
-    let jsDate = new Date(fullYear, month - 1, day, hours, minutes);
-    
-    return jsDate.getTime() / 86400000 + 25569; // Convert to Excel format
 }
 
 function waitForPageLoad() {
@@ -130,4 +142,50 @@ function showToast(message, type) {
     }, 2000);
 }
 
-extractTableData();
+function convertDate(dateStr){
+    if(useExcelFormat){
+        return convertToExcelDate(dateStr);
+    }
+    else{
+        return convertToReadableDateTime(dateStr);    
+    }
+}
+
+function convertToExcelDate(dateStr) {
+    const months = {
+        "Jan": 1, "Feb": 2, "Mar": 3, "Apr": 4, "May": 5, "Jun": 6,
+        "Jul": 7, "Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12
+    };
+
+    const match = dateStr.match(/(\d+) (\w+) '(\d+) \| (\d+):(\d+) (\w+)/);
+    if (!match) return "";
+
+    let [, day, monthStr, year, hours, minutes, ampm] = match;
+    let month = months[monthStr];
+    let fullYear = 2000 + parseInt(year);  // Convert '25 to 2025
+
+    hours = parseInt(hours);
+    minutes = parseInt(minutes);
+    if (ampm === "pm" && hours !== 12) hours += 12;
+    if (ampm === "am" && hours === 12) hours = 0;
+
+    let jsDate = new Date(fullYear, month - 1, day, hours, minutes);
+    
+    return jsDate.getTime() / 86400000 + 25569; // Convert to Excel format
+}
+
+function convertToReadableDateTime(dateStr) {
+    const months = {
+        "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
+        "Jul": "07", "Aug": "08", "Sep": "09", "Oct": "10", "Nov": "11", "Dec": "12"
+    };
+
+    const match = dateStr.match(/(\d{1,2}) (\w{3}) '(\d{2}) \| (\d{1,2}):(\d{2}) (am|pm)/i);
+    if (!match) return dateStr;
+
+    let [, day, month, year, hour, minute, meridian] = match;
+    year = "20" + year; // Convert '25 to 2025
+    month = months[month];
+
+    return `${year}-${month}-${day.padStart(2, "0")} ${hour}:${minute} ${meridian.toUpperCase()}`;
+}
