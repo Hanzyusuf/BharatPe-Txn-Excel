@@ -4,6 +4,8 @@
 
 This Firefox extension allows BharatPe business users to extract transaction data effortlessly. You can now **download transactions directly via BharatPe’s API** or **copy data from the Transaction History page** for Excel.
 
+[<img src="./demo/screenshot.png" width="240" />](./demo/screenshot.png)
+
 ## Features
 
 ✅ **API-based transaction downloads (from any page)**  
