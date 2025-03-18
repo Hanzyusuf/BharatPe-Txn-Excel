@@ -69,3 +69,4 @@ Located in the **extension popup**, allowing users to customize extraction behav
 - **Auto-authentication** ensures seamless transaction fetching.
 - If no **BharatPe tab is open** during the first-time authentication, the user needs to login manually.
 - The **webpage extraction method only works on the Transaction History page**.
+- **A maximum of 10,000 records are fetched when using the API Based download mode**.
