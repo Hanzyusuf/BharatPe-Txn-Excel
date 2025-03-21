@@ -9,7 +9,7 @@
     <div id="popup-container">
         
         <div class="input-settings-section">
-            <h5 class="input-settings-title mt-0">Settings: </h5>
+            <h5 id="input-settings-title" class="input-settings-title mt-0">Settings: </h5>
             <label>
                 <input type="checkbox" id="includeHeaderInput" checked>
                 <span class="input-label">Include Header</span>
@@ -18,6 +18,17 @@
                 <input type="checkbox" id="excelDateTimeFormat" checked>
                 <span class="input-label">Copy in Excel DateTime Format</span>
             </label>
+            <!-- Column Order UI in Popup -->
+            <div class="column-order-section">
+                <h5 class="column-order-title">Arrange Columns:</h5>
+                <div id="column-container">
+                    <div class="column-item" draggable="true" data-column="Received From">Received From</div>
+                    <div class="column-item" draggable="true" data-column="UTR ID">UTR ID</div>
+                    <div class="column-item" draggable="true" data-column="VPA">VPA</div>
+                    <div class="column-item" draggable="true" data-column="Date & Time">Date & Time</div>
+                    <div class="column-item" draggable="true" data-column="Amount">Amount</div>
+                </div>
+            </div>
         </div>
 
         <!-- Section for API Method, Date Range Selection & CSV Download -->
@@ -57,6 +68,7 @@
     </div>
     <!-- <script src="popup.js"></script> -->
     <script type="module" src="popup.js"></script>
+    <script type="module" src="arrange-col.js"></script>
     <script type="module" src="csvUtils.js"></script>
     <script type="module" src="transactions.js"></script>
 </body>

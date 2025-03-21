@@ -98,3 +98,58 @@ p {
     margin-top: 5px;
     font-size: 12px;
 }
+
+/* Styling the arrange columns section */
+.column-order-section {
+    margin: 12px 0px;
+    padding: 4px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.column-order-title {
+    font-size: 12px;
+    margin: 4px 0px;
+    font-weight: bold;
+}
+#column-container {
+    display: flex;
+    gap: 8px;
+    padding: 4px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* .draggable-item {
+    padding: 6px 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.2s;
+} */
+
+.column-item {
+    margin-inline: 0px;
+    padding: 4px 6px;
+    background: #498647;
+    border: 1px solid #000;
+    border-radius: 2px;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s ease-in-out;
+    font-size: 12px;
+}
+.column-item:hover{
+    background: #365c35;
+}
+
+.column-item.dragging {
+    opacity: 0.6;
+    transform: scale(1.05);
+}

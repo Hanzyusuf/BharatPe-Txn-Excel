@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "BharatPe Txn-Excel",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Extracts transaction history data and copies it to clipboard in Excel format.",
   "permissions": ["activeTab", "tabs", "clipboardWrite", "storage"],
   "browser_specific_settings": {
