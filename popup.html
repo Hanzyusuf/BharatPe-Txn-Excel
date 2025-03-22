@@ -9,7 +9,7 @@
     <div id="popup-container">
         
         <div class="input-settings-section">
-            <h5 id="input-settings-title" class="input-settings-title mt-0">Settings: </h5>
+            <h6 id="input-settings-title" class="input-settings-title mt-0">Settings: </h6>
             <label>
                 <input type="checkbox" id="includeHeaderInput" checked>
                 <span class="input-label">Include Header</span>
@@ -17,6 +17,17 @@
             <label>
                 <input type="checkbox" id="excelDateTimeFormat" checked>
                 <span class="input-label">Copy in Excel DateTime Format</span>
+            </label>
+            <label>
+                <input type="checkbox" id="separateDateTime">
+                <span class="input-label">Separate Date & Time Columns</span>
+            </label>
+            <label class="ml-1 mt-1">
+                <span class="input-label">File Format:</span>
+                <select id="fileFormat">
+                    <option value="csv" selected="selected">.csv</option>
+                    <option value="tsv">.tsv</option>
+                </select>
             </label>
             <!-- Column Order UI in Popup -->
             <div class="column-order-section">

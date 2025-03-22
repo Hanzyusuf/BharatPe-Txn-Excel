@@ -33,6 +33,28 @@ function initializeSavedValues(){
     excelDateTime_CB.addEventListener("change", function () {
         browser.storage.local.set({ excelDateTime: excelDateTime_CB.checked });
     });
+
+    const separateDateTime_CB = document.getElementById("separateDateTime");
+    // Load saved preference
+    browser.storage.local.get("separateDateTime").then((data) => {
+        separateDateTime_CB.checked = data.separateDateTime !== false; // Default to true
+    });
+    // Save preference when changed
+    separateDateTime_CB.addEventListener("change", function () {
+        browser.storage.local.set({ separateDateTime: separateDateTime_CB.checked });
+    });
+
+    const fileFormatSelect = document.getElementById("fileFormat");
+
+    // Load saved file format preference
+    browser.storage.local.get("fileFormat").then((data) => {
+        fileFormatSelect.value = data.fileFormat || "csv"; // Default to CSV
+    });
+
+    // Save preference when changed
+    fileFormatSelect.addEventListener("change", function () {
+        browser.storage.local.set({ fileFormat: fileFormatSelect.value });
+    });
 }
 
 function setupPopupMenu(){
@@ -105,7 +127,12 @@ async function handleCSVDownload(){
         }
 
         const csvContent = await convertToCSV(transactions.data);
-        const filename = `BharatPe Transaction History ${document.getElementById('start-date').value} to ${document.getElementById('end-date').value}.csv`;
+        
+        // Get selected file format from storage
+        const { fileFormat } = await browser.storage.local.get("fileFormat");
+        const fileExtension = fileFormat === "tsv" ? "tsv" : "csv";
+
+        const filename = `BharatPe Transaction History ${document.getElementById('start-date').value} to ${document.getElementById('end-date').value}.${fileExtension}`;
         downloadCSV(csvContent, filename);
 
         document.getElementById('status-message').textContent = "Download successful!";

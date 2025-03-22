@@ -1,5 +1,8 @@
 let useExcelFormat = true;
 let includeHeader = true;
+let columnOrder = ["received_from", "utr_id", "vpa", "date_time", "amount"];
+let separateDateTime = true;
+let delimiter = ",";
 
 browser.runtime.onMessage.addListener(async (message) => {
     // Check if the current URL is a BharatPe domain
@@ -9,11 +12,16 @@ browser.runtime.onMessage.addListener(async (message) => {
     }
 
     try {
-        // Update Preference Values
         // Fetch stored preferences
-        const data = await browser.storage.local.get(["excelDateTime", "includeHeader"]);
+        const data = await browser.storage.local.get(["excelDateTime", "includeHeader", "columnOrder", "separateDateTime", "fileFormat"]);
         useExcelFormat = data.excelDateTime !== false; // Default to true
         includeHeader = data.includeHeader !== false; // Default to true
+        columnOrder = data.columnOrder || ["received_from", "utr_id", "vpa", "date_time", "amount"];
+        separateDateTime = data.separateDateTime !== false; // Default to true
+
+        delimiter = data.fileFormat === "tsv" ? "\t" : ","; // Choose between CSV (,) or TSV (tab)
+
+        modifyColumnOrderForDateTime();
 
         if (message.action === "copyCurrent") {
             copyCurrentPageData();
@@ -73,8 +81,27 @@ async function extractAllTableData() {
     }
 }
 
-function getHeader() {
+/* function getHeader() {
     return "Received From\tUTR ID\tVPA\tDate & Time\tAmount\n";
+} */
+
+function getHeader() {
+    const defaultHeaders = {
+        received_from: "Received From",
+        utr_id: "UTR ID",
+        vpa: "VPA",
+        amount: "Amount"
+    };
+
+    if (separateDateTime) {
+        defaultHeaders.date = "Date";
+        defaultHeaders.time = "Time";
+    } else {
+        defaultHeaders.date_time = "Date & Time";
+    }
+
+    const headers = columnOrder.map(col => defaultHeaders[col] || col);
+    return headers.join(delimiter) + "\n";
 }
 
 function extractTableData() {
@@ -92,13 +119,35 @@ function extractTableData() {
             const amountRaw = cells[7].innerText.trim();
 
             // Convert date to appropriate format
-            const dateTime = convertDate(dateTimeRaw);
+            let dateTime = "";
+            let date = "";
+            let time = "";
+            if (separateDateTime) {
+                date = convertToReadableDate(dateTimeRaw);
+                time = convertToReadableTime(dateTimeRaw);
+            } else {
+                dateTime = convertDate(dateTimeRaw);
+            }
 
             // Remove ₹ symbol and spaces
             const amount = amountRaw.replace(/[₹,]/g, '').trim();
 
-            // Format: Column separated by tab, row by newline
-            data += `${receivedFrom}\t${utrId}\t${vpa}\t${dateTime}\t${amount}\n`;
+            const rowData = {
+                received_from: receivedFrom,
+                utr_id: utrId,
+                vpa: vpa,
+                amount: amount
+            };
+            
+            if (separateDateTime) {
+                rowData.date = date;
+                rowData.time = time;
+            } else {
+                rowData.date_time = dateTime;
+            }
+
+            // Arrange columns based on user preference
+            data += columnOrder.map(col => rowData[col] || "").join(delimiter) + "\n";
         }
     });
 
@@ -174,6 +223,21 @@ function convertToExcelDate(dateStr) {
     return jsDate.getTime() / 86400000 + 25569; // Convert to Excel format
 }
 
+function convertToReadableDate(dateStr) {
+    const match = dateStr.match(/(\d{1,2}) (\w{3}) '(\d{2})/);
+    if (!match) return dateStr;
+    let [, day, month, year] = match;
+    year = "20" + year; // Convert '25 to 2025
+    return `${year}-${month}-${day.padStart(2, "0")}`;
+}
+
+function convertToReadableTime(dateStr) {
+    const match = dateStr.match(/(\d{1,2}):(\d{2}) (am|pm)/i);
+    if (!match) return dateStr;
+    let [, hour, minute, meridian] = match;
+    return `${hour}:${minute} ${meridian.toUpperCase()}`;
+}
+
 function convertToReadableDateTime(dateStr) {
     const months = {
         "Jan": "01", "Feb": "02", "Mar": "03", "Apr": "04", "May": "05", "Jun": "06",
@@ -188,4 +252,11 @@ function convertToReadableDateTime(dateStr) {
     month = months[month];
 
     return `${year}-${month}-${day.padStart(2, "0")} ${hour}:${minute} ${meridian.toUpperCase()}`;
+}
+
+function modifyColumnOrderForDateTime(){
+    // Adjust column order dynamically if separateDateTime is enabled
+    columnOrder = separateDateTime 
+    ? columnOrder.flatMap(col => (col === "date_time" ? ["date", "time"] : col)) 
+    : columnOrder;
 }
